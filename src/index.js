@@ -47,7 +47,8 @@ class Game extends React.Component {
         }
       ],
       xIsNext: true,
-      stepNumber: 0
+      stepNumber: 0,
+      ascendingOrder: true,
     };
   }
 
@@ -81,6 +82,21 @@ class Game extends React.Component {
     });
   }
 
+  toggleOrder() {
+    this.setState({
+      ascendingOrder: !this.state.ascendingOrder,
+    });
+  }
+
+  undo() {
+    if (this.state.stepNumber) {
+      this.setState({
+        stepNumber: this.state.stepNumber - 1,
+        xIsNext: !this.state.xIsNext,
+      });
+    };
+  }
+
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
@@ -89,10 +105,10 @@ class Game extends React.Component {
     const bold = { fontWeight: 'bold' };
     const normal = { fontWeight: 'normal' };
 
-
     // Create new array to map over
-    const moves = history.map((step, move) => {
-      const desc = move ? "Move #" + move + " at (" + step.clickedSquare + ")" : "Game start";
+    const moves = history.map((values, move) => {
+      const desc = move ? "Move #" + move + " at (" + values.clickedSquare + ")" : "Game start";
+
       return (
         <li key={move}>
           <a href="#" style={this.state.stepNumber === move ? bold : normal}
@@ -104,11 +120,18 @@ class Game extends React.Component {
 
     let status;
     if (winner) {
-      status = 'Winner: ' + winner;
+      status = 'Winner: ' + winner + '!';
+    }
+    else if (this.state.stepNumber === 9) {
+      status = 'Tie Game!'
     }
     else {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
-    }
+    };
+
+    if (!this.state.ascendingOrder) {
+      moves.reverse();
+    };
 
     return (
       <div className="game">
@@ -119,8 +142,14 @@ class Game extends React.Component {
           />
         </div>
         <div className="game-info">
-          <div>{ status }</div>
+          <div className="status">{ status }</div>
           <ol id="moveList">{ moves }</ol>
+        </div>
+        <div className="game-buttons">
+          <button onClick={ () => this.toggleOrder() }>
+            { this.state.ascendingOrder ? "Toggle Descending" : "Toggle Ascending" }
+          </button>
+          <button onClick={ () => this.undo() }>Undo</button>
         </div>
       </div>
     );
